@@ -1,0 +1,42 @@
+
+1. kernel panic, overwritten by dfb, out of range overwritten ioremap mmap space, kernel space memset/memcpy not generate page_fault, 
+   because kernel has its own exception handler for memset/memcpy
+
+2. pcreate_thread failed, duo to pending signal, kernel do_fork() failed. 
+
+3. DFB HDCP fail duo to av driver change to use kernel thread to init fw, fw is not ready to init HDCP key 
+
+4. video player pause during application loading, because high priority real time player thread writing to log file will be blocked
+   Change real time player to use pipe for log, another low priority thread read log from pipe and write to output file
+
+5. dma load fw, src is flush by mmap in request_firmware
+   random FW init failure, FW end of data is not correct, flush dcache to fix the issue
+
+6. iso9660 ls takes 20 seconds for 4500 photo files in root folder, becaue iso9660 file dentry search is using brute force search algorithm
+   the search time is exponential growth based on file number inside the directory folder.
+   Add hash function to speed up iso file lookup search, use 1 second to finish 
+
+7. use another Proc to do display refresh every 300ms while kernel bootup, to fix splash image broken issue
+
+8. for user space encryption, add cacheflush system call support in kernel
+
+9. kernel system hung detection, because block_size is wrong after dvd player open /dev/sr0, grow_buffer deadloop
+
+10. udf mount multi-session dvd-r disc failure, because VRS is after 4GB, fixed two kernel udf support bugs    
+
+11. Mount specific WD USB HDD not stable, because this disc return incorrect status for USB REQ_STATUS command, causes host seems not able to
+    detect HDD plug in, and skip USB device enumration handshake. Fixed in host side USB driver, to workaround this issue.  
+ 
+12. application crash with -mlong-call and -O2, suspect toolchain bug, use gdb to trace, r13 is changed after push/pop with statfs syscall.
+    statfs.h structure mismatch between kernel and uclibc, fix in kernel  
+
+13. i2c hotplug duo to HDMI cable unplug, use gpio to set scl, sda to high, back to idle state
+
+
+Others:
+1. porting av driver to VxWorks, no user space and kernel space memcopy, same as QNX, MQX
+2. WinCE driver, platform builder, Windows XP/Vista driver DDK, WinDGB
+3. optimization performance
+4. debug long term stability issue
+5. smp 
+6. Linux kernel, fs/vfs, block drivers, io drivers, memory management, dma, cache, 
